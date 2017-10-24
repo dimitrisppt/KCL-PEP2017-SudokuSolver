@@ -33,9 +33,9 @@ Then, a loop begins that does the following:
 
 - Loop over the entire grid
 - For each square that has only one value in it, remove that value from the sets of possible values for:
- - All the other squares on that row
- - All the other squares in that column
- - All the other squares in the same *box*.  A 9x9 grid is divided into 9 boxes, each 3x3: no two values in the same box can have the same value.  For larger grids (e.g. 16x16), the size of the box is always the square root of the size of the grid.
+    - All the other squares on that row
+    - All the other squares in that column
+    - All the other squares in the same *box*.  A 9x9 grid is divided into 9 boxes, each 3x3: no two values in the same box can have the same value.  For larger grids (e.g. 16x16), the size of the box is always the square root of the size of the grid.
  
 
 If at any point the set of values for a square becomes empty, the function should return false: it has been shown that there is no value that can go in a square.
@@ -97,9 +97,9 @@ Implement successors() as follows:
 - Find the first row containing a square that still has more than one option in its set
 - Find the left-most square on that row
 - For each value in the set for that square:
- - Make a *copy* of the current Sudoku object (this) using new
- - Use setSquare on the *copy* to set the value of the square
- - If setSquare returns true, add the pointer to the back of the vector of successors to return.  Otherwise, delete the pointer.  (You can use a unique_ptr for this if you wish.)
+    - Make a *copy* of the current Sudoku object (this) using new
+    - Use setSquare on the *copy* to set the value of the square
+    - If setSquare returns true, add the pointer to the back of the vector of successors to return.  Otherwise, delete the pointer.  (You can use a unique_ptr for this if you wish.)
 
 - Once done, return the vector of successors
 
