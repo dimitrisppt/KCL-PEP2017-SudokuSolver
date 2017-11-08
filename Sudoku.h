@@ -90,8 +90,23 @@ public:
                                     // cout << endl;
                                 }
                             }
-                            
-                            eraseRowCol(index, row, col, exists);
+
+                            set<int> copyOfGrid= incompleteGrid[index][col];
+                            int rmValue= *incompleteGrid[row][col].begin();
+
+                            if (index != row) {
+                                if (copyOfGrid.find(rmValue) != copyOfGrid.end()) {
+                                    copyOfGrid.erase(rmValue);
+                                    exists = false;
+                                    incompleteGrid[index][col] = copyOfGrid;
+                                }
+                            }
+
+                            if (incompleteGrid[index][col].size() == 0) {
+                                return false;
+                            }
+
+
 
 
 
@@ -195,27 +210,14 @@ public:
         }
     }
 
-    bool eraseRowCol(int index, int row, int col, bool exists) {
-        set<int> copyOfGrid= incompleteGrid[index][col];
-        int rmValue= *incompleteGrid[row][col].begin();
-
-        if (index != row) {
-            if (copyOfGrid.find(rmValue) != copyOfGrid.end()) {
-                copyOfGrid.erase(rmValue);
-                exists = false;
-                incompleteGrid[index][col] = copyOfGrid;
-            }
-        }
-
-        if (incompleteGrid[index][col].size() == 0) {
-            return false;
-        }
-
-    }
-
-    bool eraseColRow(int index, int row, int col, bool exists) {
-
-    }
+    // bool eraseRowCol(int index, int row, int col, bool exists) {
+    //
+    //
+    // }
+    //
+    // bool eraseColRow(int index, int row, int col, bool exists) {
+    //
+    // }
 
 
 
