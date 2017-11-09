@@ -78,10 +78,59 @@ public:
                             return false;
                         }
 
-                        if (incompleteGrid[row][col].size()==0) {
-                            return false;
-                        }
+                    }
 
+                    if (incompleteGrid[row][col].size()==0) {
+                        return false;
+                    }
+
+                    if (incompleteGrid[row][col].size()==2) {
+                        for (int k = 0; k<size; ++k) {
+
+                            if ((col != k) && (incompleteGrid[row][col] == incompleteGrid[row][k])) {
+                                auto point = incompleteGrid[row][col].begin();
+                                int num = *point;
+                                ++point;
+                                int num2 = *point;
+                                for (int column=0; column < size; ++column) {
+                                    if ((column != col) && (column != k)) {
+                                        incompleteGrid[row][column].erase(num);
+                                        if (incompleteGrid[row][column].size() == 0) {
+                                            return false;
+                                        }
+                                        incompleteGrid[row][column].erase(num2);
+                                        if (incompleteGrid[row][column].size() == 0) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if ((row != k) && (incompleteGrid[row][col] == incompleteGrid[k][col])) {
+                                auto point2 = incompleteGrid[row][col].begin();
+                                int num3 = *point2;
+                                ++point2;
+                                int num4 = *point2;
+                                for (int rRow=0; rRow<size; ++rRow) {
+                                    if ((rRow != row) && (rRow != k)) {
+                                        incompleteGrid[rRow][col].erase(num3);
+                                        if (incompleteGrid[rRow][col].size() == 0) {
+                                            return false;
+                                        }
+                                        incompleteGrid[rRow][col].erase(num4);
+                                        if (incompleteGrid[rRow][col].size() == 0) {
+                                            return false;
+                                        }
+
+                                    }
+                                }
+
+                            }
+
+
+
+
+                        }
                     }
 
                 }
@@ -168,7 +217,6 @@ public:
                 if (incompleteGrid[row][index].find(rmValue) != incompleteGrid[row][index].end()) {
                     incompleteGrid[row][index].erase(rmValue);
                     this->exists = false;
-
                     // for (int val : copyOfGrid) {
                     //     cout << val << ", ";
                     // }

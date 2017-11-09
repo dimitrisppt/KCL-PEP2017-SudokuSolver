@@ -5,14 +5,14 @@
 
 #include <memory>
 using std::unique_ptr;
-using std::shared_ptr;
+
 
 
 #include <queue>
 using std::priority_queue;
 
 struct HeuristicCompare {
-    bool operator()(const shared_ptr<Searchable>& first, const shared_ptr<Searchable>& second) {
+    bool operator()(const unique_ptr<Searchable>& first, const unique_ptr<Searchable>& second) {
         return first->heuristicValue() > second->heuristicValue();
     }
 };
@@ -21,7 +21,7 @@ class BestFirstSearch {
 
 protected:
 
-    priority_queue<shared_ptr<Searchable>, vector<shared_ptr<Searchable>>, HeuristicCompare> pq;
+    priority_queue<unique_ptr<Searchable>, vector<unique_ptr<Searchable>>, HeuristicCompare> pq;
 
     /// Make sure you increment this every time you 'expand' a node, by getting it successors and putting them on the queue
     int nodes = 0;
@@ -49,7 +49,7 @@ public:
 
             ++nodes;
 
-            shared_ptr<Searchable> current(std::move(pq.top()));
+            unique_ptr<Searchable> current(std::move(const_cast<unique_ptr<Searchable> &> (pq.top())));
 
             pq.pop();
 
