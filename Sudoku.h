@@ -4,18 +4,13 @@
 #include "Searchable.h"
 #include <set>
 #include <vector>
-// #include <string>
-// #include <iostream>
 #include <cmath>
 
-using namespace std;
-using std::unique_ptr;
-using std::set;
 using std::endl;
-// using std::vector;
+using namespace std;
+using std::set;
 using std::cout;
-// using std::string;
-// using std::iterator;
+using std::unique_ptr;
 
 // TODO: Your Sudoku class goes here:
 class Sudoku: public Searchable{
@@ -30,13 +25,14 @@ private:
 public:
 
     Sudoku(int sizeIn) : boxSize(sqrt(sizeIn)), size(sizeIn){
-
+        //resize grid
         incompleteGrid.resize(size, vector<set<int>>(size));
 
+        //store allowedValues
         for(int i=0; i< size; ++i) {
             allowedValues.insert(i+1);
         }
-
+        //initialise grid
          for (int col=0; col<size; ++col) {
             for (int row=0; row< size; ++row) {
                 incompleteGrid[row][col]=allowedValues;
@@ -76,20 +72,8 @@ public:
                         int index=0;
                         while (index<size) {
 
-                            set<int> copyOfGrid2= incompleteGrid[row][index];
-                            int rmValue2= *incompleteGrid[row][col].begin();
 
-                            if (index != col) {
-                                if (copyOfGrid2.find(rmValue2) != copyOfGrid2.end()) {
-                                    copyOfGrid2.erase(rmValue2);
-                                    exists = false;
-                                    incompleteGrid[row][index] = copyOfGrid2;
-                                    // for (int val : copyOfGrid) {
-                                    //     cout << val << ", ";
-                                    // }
-                                    // cout << endl;
-                                }
-                            }
+                            eraseRow(index, row, col, exists);
 
                             set<int> copyOfGrid= incompleteGrid[index][col];
                             int rmValue= *incompleteGrid[row][col].begin();
@@ -99,21 +83,16 @@ public:
                                     copyOfGrid.erase(rmValue);
                                     exists = false;
                                     incompleteGrid[index][col] = copyOfGrid;
+                                    // for (int val : copyOfGrid) {
+                                    //     cout << val << ", ";
+                                    // }
+                                    // cout << endl;
                                 }
                             }
 
                             if (incompleteGrid[index][col].size() == 0) {
                                 return false;
                             }
-
-
-
-
-
-                            if (incompleteGrid[row][index].size() == 0) {
-                                return false;
-                            }
-
 
                             eraseBox(row, col, exists);
                             ++index;
@@ -166,37 +145,6 @@ public:
 
     }
 
-    virtual void write(ostream & os) const override{
-        os << "-------------------------------------------------------" << endl;
-      for (int row = 0; row < size; row++) {
-          for (int col=0; col< size; col++) {
-              os << "| ";
-              for (int element: incompleteGrid[row][col]) {
-                  os << " *" << element << "* ";
-                  if (!((col+1) % size))
-                      os << " | ";
-              }
-              if (!((row+1) %boxSize))
-                  os << endl << "-------------------------------------------------------" << endl;
-              else
-                  os << " ";
-        }
-      }
-
-
-
-        // for (int i=0; i<size; ++i) {
-        //     for (int j=0; j<size; ++j) {
-        //         os <<"  |  ";
-        //         for (int element: incompleteGrid[i][j]) {
-        //             os <<" "<<element<<" ";
-        //         }
-        //         os<<"  |  ";
-        //     }
-        //     os<<endl;
-        // }
-    }
-
     virtual int heuristicValue() const override{
         for (int i=0; i<size; ++i) {
             for (int j=0; j<size; ++j) {
@@ -210,15 +158,45 @@ public:
         }
     }
 
-    // bool eraseRowCol(int index, int row, int col, bool exists) {
-    //
-    //
-    // }
-    //
-    // bool eraseColRow(int index, int row, int col, bool exists) {
-    //
-    // }
+    virtual void write(ostream & os) const override{
+        os << "-------------------------------------------------------" << endl;
+      for (int row = 0; row < size; row++) {
+          for (int col=0; col< size; col++) {
+              os << "| ";
+              for (int element: incompleteGrid[row][col]) {
+                  os << " :" << element << ": ";
+                  if (!((col+1) % size))
+                      os << " | ";
+              }
+              if (!((row+1) %boxSize))
+                  os << endl << "-------------------------------------------------------" << endl;
+              else
+                  os << " ";
+        }
+      }
+    }
 
+    bool eraseRow(int index, int row, int col, bool exists) {
+
+        set<int> copyOfGrid2= incompleteGrid[row][index];
+        int rmValue2= *incompleteGrid[row][col].begin();
+
+        if (index != col) {
+            if (copyOfGrid2.find(rmValue2) != copyOfGrid2.end()) {
+                copyOfGrid2.erase(rmValue2);
+                exists = false;
+                incompleteGrid[row][index] = copyOfGrid2;
+                // for (int val : copyOfGrid) {
+                //     cout << val << ", ";
+                // }
+                // cout << endl;
+            }
+        }
+
+        if (incompleteGrid[row][index].size() == 0) {
+            return false;
+        }
+    }
 
 
 
