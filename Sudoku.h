@@ -21,6 +21,7 @@ private:
     set<int> allowedValues;
     int size;
     int boxSize;
+    bool exists = false;
 
 public:
 
@@ -53,52 +54,38 @@ public:
 
     }
 
-
     bool setSquare(int row, int col, int value) {
 
-        bool exists = false;
         do {
 
             incompleteGrid[row][col].clear();
             incompleteGrid[row][col].insert(value);
-
             exists = true;
+
 
             for (int col=0; col<size; col++) {
                 for (int row=0; row<size; row++) {
 
                     if (incompleteGrid[row][col].size()==1) {
 
-                        int index=0;
-                        while (index<size) {
-
-
-                            eraseRow(index, row, col, exists);
-
-                            set<int> copyOfGrid= incompleteGrid[index][col];
-                            int rmValue= *incompleteGrid[row][col].begin();
-
-                            if (index != row) {
-                                if (copyOfGrid.find(rmValue) != copyOfGrid.end()) {
-                                    copyOfGrid.erase(rmValue);
-                                    exists = false;
-                                    incompleteGrid[index][col] = copyOfGrid;
-                                    // for (int val : copyOfGrid) {
-                                    //     cout << val << ", ";
-                                    // }
-                                    // cout << endl;
-                                }
-                            }
-
-                            if (incompleteGrid[index][col].size() == 0) {
-                                return false;
-                            }
-
-                            eraseBox(row, col, exists);
-                            ++index;
+                        if (!eraseRow(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                            return false;
                         }
+                        if (!eraseCol(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                            return false;
+                        }
+                        if (!eraseBox(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                            return false;
+                        }
+
+                        if (incompleteGrid[row][col].size()==0) {
+                            return false;
+                        }
+
                     }
+
                 }
+
             }
 
         } while (exists == false);
@@ -146,20 +133,19 @@ public:
     }
 
     virtual int heuristicValue() const override{
-        for (int i=0; i<size; ++i) {
-            for (int j=0; j<size; ++j) {
-                if (incompleteGrid[i][j].size() > 1) {
-                    cout << incompleteGrid[i][j].size();
-                    return incompleteGrid[i][j].size();
-
+        int heuristicValue = 0;
+            for(auto i = 0; i < size; ++i) {
+                for(auto j = 0; j < size; ++j) {
+                    if(incompleteGrid[i][j].size() > 1)
+                        ++heuristicValue;
                 }
-
             }
-        }
+            return heuristicValue;
+
     }
 
     virtual void write(ostream & os) const override{
-        os << "-------------------------------------------------------" << endl;
+    os << "-------------------------------------------------------" << endl;
       for (int row = 0; row < size; row++) {
           for (int col=0; col< size; col++) {
               os << "| ";
@@ -176,31 +162,50 @@ public:
       }
     }
 
-    bool eraseRow(int index, int row, int col, bool exists) {
+    bool eraseRow(const int & rmValue, bool exists, const int row, const int col) {
+        for (int index = 0; index < size; ++index) {
+            if (index != col) {
+                if (incompleteGrid[row][index].find(rmValue) != incompleteGrid[row][index].end()) {
+                    incompleteGrid[row][index].erase(rmValue);
+                    this->exists = false;
 
-        set<int> copyOfGrid2= incompleteGrid[row][index];
-        int rmValue2= *incompleteGrid[row][col].begin();
+                    // for (int val : copyOfGrid) {
+                    //     cout << val << ", ";
+                    // }
+                    // cout << endl;
+                }
+            }
 
-        if (index != col) {
-            if (copyOfGrid2.find(rmValue2) != copyOfGrid2.end()) {
-                copyOfGrid2.erase(rmValue2);
-                exists = false;
-                incompleteGrid[row][index] = copyOfGrid2;
-                // for (int val : copyOfGrid) {
-                //     cout << val << ", ";
-                // }
-                // cout << endl;
+            if (incompleteGrid[row][index].size() == 0) {
+                return false;
             }
         }
+        return true;
+    }
 
-        if (incompleteGrid[row][index].size() == 0) {
-            return false;
+    bool eraseCol(const int & rmValue, bool exists, const int row, const int col) {
+        for (int index = 0; index < size; ++index) {
+            if (index != row) {
+                if (incompleteGrid[index][col].find(rmValue) != incompleteGrid[index][col].end()) {
+                    incompleteGrid[index][col].erase(rmValue);
+                    this->exists = false;
+                    // for (int val : copyOfGrid) {
+                    //     cout << val << ", ";
+                    // }
+                    // cout << endl;
+                }
+            }
+
+            if (incompleteGrid[index][col].size() == 0) {
+                return false;
+            }
         }
+        return true;
     }
 
 
 
-    bool eraseBox(int row, int col, bool exists) {
+    bool eraseBox(const int & rmValue, bool exists, const int row, const int col) {
         int endRow = row%boxSize;
         int startBoxRow = row - endRow;
         int endBoxRow = startBoxRow + boxSize;
@@ -212,15 +217,11 @@ public:
         for (int i=startBoxRow; i<endBoxRow; i++) {
             for (int j=startBoxCol; j<endBoxCol; j++) {
 
-                set<int> copyOfGrid= incompleteGrid[i][j];
-                int rmValue= *incompleteGrid[row][col].begin();
-
                 if (i!=row) {
                     if (j!=col) {
-                        if(copyOfGrid.find(rmValue) != copyOfGrid.end()) {
-                            copyOfGrid.erase(rmValue);
-                            exists = false;
-                            incompleteGrid[i][j] = copyOfGrid;
+                        if(incompleteGrid[i][j].find(rmValue) != incompleteGrid[i][j].end()) {
+                            incompleteGrid[i][j].erase(rmValue);
+                            this->exists = false;
 
                             if (incompleteGrid[i][j].size() == 0) {
                                 return false;
@@ -230,10 +231,8 @@ public:
                 }
             }
         }
+        return true;
     }
-
-
-
 
 };
 
