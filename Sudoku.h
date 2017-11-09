@@ -67,14 +67,14 @@ public:
                 for (int row=0; row<size; row++) {
 
                     if (incompleteGrid[row][col].size()==1) {
-
-                        if (!eraseRow(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                        int rmValue = *incompleteGrid[row][col].begin();
+                        if (!eraseRow(rmValue, exists, row, col)) {
                             return false;
                         }
-                        if (!eraseCol(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                        if (!eraseCol(rmValue, exists, row, col)) {
                             return false;
                         }
-                        if (!eraseBox(*incompleteGrid[row][col].begin(), exists, row, col)) {
+                        if (!eraseBox(rmValue, exists, row, col)) {
                             return false;
                         }
 
@@ -85,52 +85,8 @@ public:
                     }
 
                     if (incompleteGrid[row][col].size()==2) {
-                        for (int k = 0; k<size; ++k) {
+                        eraseSameRowsColumns(row,col);
 
-                            if ((col != k) && (incompleteGrid[row][col] == incompleteGrid[row][k])) {
-                                auto point = incompleteGrid[row][col].begin();
-                                int num = *point;
-                                ++point;
-                                int num2 = *point;
-                                for (int column=0; column < size; ++column) {
-                                    if ((column != col) && (column != k)) {
-                                        incompleteGrid[row][column].erase(num);
-                                        if (incompleteGrid[row][column].size() == 0) {
-                                            return false;
-                                        }
-                                        incompleteGrid[row][column].erase(num2);
-                                        if (incompleteGrid[row][column].size() == 0) {
-                                            return false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if ((row != k) && (incompleteGrid[row][col] == incompleteGrid[k][col])) {
-                                auto point2 = incompleteGrid[row][col].begin();
-                                int num3 = *point2;
-                                ++point2;
-                                int num4 = *point2;
-                                for (int rRow=0; rRow<size; ++rRow) {
-                                    if ((rRow != row) && (rRow != k)) {
-                                        incompleteGrid[rRow][col].erase(num3);
-                                        if (incompleteGrid[rRow][col].size() == 0) {
-                                            return false;
-                                        }
-                                        incompleteGrid[rRow][col].erase(num4);
-                                        if (incompleteGrid[rRow][col].size() == 0) {
-                                            return false;
-                                        }
-
-                                    }
-                                }
-
-                            }
-
-
-
-
-                        }
                     }
 
                 }
@@ -157,58 +113,69 @@ public:
 
     virtual vector<unique_ptr<Searchable>> successors() const override {
 
-        vector<unique_ptr<Searchable>> tempVector;
-
-        for (int row=0; row<size; ++row) {
-            for(int col=0; col<size; ++col) {
-                if (incompleteGrid[row][col].size()>1) {
-
-                    for (int value: incompleteGrid[row][col]) {
-
-                        Sudoku *copySudoku = new Sudoku(*this);
-                        bool result = copySudoku->setSquare(row,col,value);
-                        if (result) {
-                            tempVector.push_back(unique_ptr<Searchable>(copySudoku));
-                        }
-                        else {
-                            delete copySudoku;
-                        }
+        vector<unique_ptr<Searchable> > tempVector;
+        int var1, var2 = -1; int var3 = 10;
+        for(auto row = 0; row < size; ++row) {
+            for(auto col = 0; col < size; ++col) {
+                if(incompleteGrid[row][col].size() != 1) {
+                    if (incompleteGrid[row][col].size() < var3) {
+                        var1 = row; var2 = col;
+                        var3 = incompleteGrid[row][col].size();
                     }
-                    return tempVector;
                 }
             }
+        }
+
+        if(var3 != 10) {
+            for(auto cell : incompleteGrid[var1][var2]) {
+                Sudoku *copySudoku = new Sudoku(*this);
+                bool result = copySudoku->setSquare(var1, var2, cell);
+                if (result) {
+                    tempVector.push_back(unique_ptr<Searchable>(copySudoku));
+                } else {
+                    delete copySudoku;
+                }
+            }
+            if(tempVector.size() == 1) {
+                if (!tempVector.front()->isSolution()) {
+                    unique_ptr<Searchable> heir (std::move(tempVector.front()));
+                    tempVector.pop_back();
+                    tempVector = heir->successors();
+                }
+            }
+            return tempVector;
         }
 
     }
 
     virtual int heuristicValue() const override{
         int heuristicValue = 0;
-            for(auto i = 0; i < size; ++i) {
-                for(auto j = 0; j < size; ++j) {
-                    if(incompleteGrid[i][j].size() > 1)
-                        ++heuristicValue;
+        for(auto i = 0; i < size; ++i) {
+            for(auto j = 0; j < size; ++j) {
+                if(incompleteGrid[i][j].size() > 1){
+                    ++heuristicValue;
                 }
             }
-            return heuristicValue;
-
+        }
+        return heuristicValue;
     }
 
     virtual void write(ostream & os) const override{
-    os << "-------------------------------------------------------" << endl;
-      for (int row = 0; row < size; row++) {
-          for (int col=0; col< size; col++) {
-              os << "| ";
-              for (int element: incompleteGrid[row][col]) {
-                  os << " :" << element << ": ";
-                  if (!((col+1) % size))
-                      os << " | ";
-              }
-              if (!((row+1) %boxSize))
-                  os << endl << "-------------------------------------------------------" << endl;
-              else
-                  os << " ";
-        }
-      }
+    // os << "-------------------------------------------------------" << endl;
+    //   for (int row = 0; row < size; row++) {
+    //       for (int col=0; col< size; col++) {
+    //           os << "| ";
+    //           for (int element: incompleteGrid[row][col]) {
+    //               os << " :" << element << ": ";
+    //               if (!((col+1) % size))
+    //                   os << " | ";
+    //           }
+    //           if (!((row+1) %boxSize))
+    //               os << endl << "-------------------------------------------------------" << endl;
+    //           else
+    //               os << " ";
+    //     }
+    //   }
     }
 
     bool eraseRow(const int & rmValue, bool exists, const int row, const int col) {
@@ -280,6 +247,58 @@ public:
             }
         }
         return true;
+    }
+
+
+    bool eraseSameRowsColumns(const int row, const int col) {
+        for (int k = 0; k<size; ++k) {
+
+            if ((incompleteGrid[row][col] == incompleteGrid[row][k]) && (k != col)) {
+                auto point = incompleteGrid[row][col].begin();
+                int num = *point;
+                ++point;
+                int num2 = *point;
+                int column = 0;
+                while (column < size) {
+                    if ((column != col) && (column != k)) {
+                        incompleteGrid[row][column].erase(num);
+                        if (incompleteGrid[row][column].size() == 0) {
+                            return false;
+                        }
+                        incompleteGrid[row][column].erase(num2);
+                        if (incompleteGrid[row][column].size() == 0) {
+                            return false;
+                        }
+                    }
+                    ++column;
+                }
+            }
+
+            if ((incompleteGrid[row][col] == incompleteGrid[k][col]) && (k != row)) {
+                auto point2 = incompleteGrid[row][col].begin();
+                int num3 = *point2;
+                ++point2;
+                int num4 = *point2;
+                int rRow = 0;
+                while (rRow < size) {
+                    if ((rRow != row) && (rRow != k)) {
+                        incompleteGrid[rRow][col].erase(num3);
+                        if (incompleteGrid[rRow][col].size() == 0) {
+                            return false;
+                        }
+                        incompleteGrid[rRow][col].erase(num4);
+                        if (incompleteGrid[rRow][col].size() == 0) {
+                            return false;
+                        }
+
+                    }
+                    ++rRow;
+                }
+
+            }
+
+        }
+
     }
 
 };
